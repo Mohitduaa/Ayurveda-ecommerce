@@ -35,4 +35,8 @@ UserRouter.put('/cart',updateCart)
 UserRouter.delete("/cart/:cartProductId", removeFromCart);
 UserRouter.post('/order',createOrder)
 UserRouter.get('/allorder',getAllOrders)
+
+const ProductRouter = Router()
+
+
 export default UserRouter;

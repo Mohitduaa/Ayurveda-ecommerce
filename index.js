@@ -27,7 +27,6 @@ app.get('/',(request,response) =>{
     })
 })
 app.use('/api/user',UserRouter)
-
 connectDB();
 
 app.listen(PORT,()=>{

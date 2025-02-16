@@ -10,7 +10,7 @@ const resend = new Resend(process.env.RESEND_API);
 const sendEmail = async({ sendTo , subject , html})=>{
     try{
         const { data, error } = await resend.emails.send({
-            from: 'Ayurveda <onreply@rechat.sbs>',
+            from: 'Ayurveda <noreply@rechat.sbs>',
             to: sendTo,
             subject: subject,
             html: html
