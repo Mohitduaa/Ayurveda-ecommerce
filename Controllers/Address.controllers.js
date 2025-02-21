@@ -1,4 +1,4 @@
-import AddressModel from "../Models/Address.Model.js";
+import AddressModel from '../Models/Address.model.js'
 import UserModel from "../Models/User.Model.js";
 import mongoose from "mongoose";
 
