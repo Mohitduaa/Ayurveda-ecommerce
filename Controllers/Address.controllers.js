@@ -1,4 +1,4 @@
-import AddressModel from "../Models/Address.model.js";
+import AddressModel from "../Models/Address.Model.js";
 import UserModel from "../Models/User.Model.js";
 import mongoose from "mongoose";
 
@@ -9,9 +9,11 @@ export async function createAddress(req, res) {
             return res.status(400).json({ message: "User ID is required", error: true, success: false });
         }
 
+        // Create new address
         const address = new AddressModel(req.body);
         await address.save();
 
+        // Link address to user
         await UserModel.findByIdAndUpdate(userId, { $push: { addres_details: address._id } });
 
         res.status(201).json({
