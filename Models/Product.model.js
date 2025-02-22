@@ -4,7 +4,7 @@ const ProductSchema = new mongoose.Schema({
     name: { type: String, required: true },
     image: {
          type: String ,
-     },  // Store single image path
+     },  
     category: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],  
     subcategory: [{ type: mongoose.Schema.Types.ObjectId, ref: "SubCategory" }],  
     unit: { type: String, default: "" },
