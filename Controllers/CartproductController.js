@@ -7,8 +7,8 @@ export const addToCart = async (req, res) => {
         const { productId, quantity } = req.body;
         const userId = req.user?.id || new mongoose.Types.ObjectId(); 
 
-        console.log("Request Body:", req.body); // Debug the incoming request
-        console.log("User ID:", userId); // Debug the user ID
+        console.log("Request Body:", req.body); 
+        console.log("User ID:", userId); 
 
         // Validate ObjectIds
         if (!mongoose.Types.ObjectId.isValid(userId)) {
