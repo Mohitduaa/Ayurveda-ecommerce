@@ -33,7 +33,7 @@ UserRouter.delete('/delete-product/:id',Auth,deleteProduct)
 UserRouter.post('/cart',Auth,addToCart)
 UserRouter.get('/Allcart',Auth,getCart)
 UserRouter.put('/cart',Auth,updateCart)
-UserRouter.delete("/cart/:cartProductId",Auth, removeFromCart);
+UserRouter.delete("/cart/:productId",Auth, removeFromCart);
 UserRouter.post('/order',Auth,createOrder)
 UserRouter.get('/allorder',Auth,getAllOrders)
 UserRouter.get('/order-by-id/:id',Auth,getOrderById)

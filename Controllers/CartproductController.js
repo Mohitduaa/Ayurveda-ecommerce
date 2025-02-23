@@ -1,47 +1,39 @@
 import CartproductModel from "../Models/Cartproduct.Model.js"; 
 import ProductModel from "../Models/Product.model.js"; 
-import UserModel from "../Models/User.Model.js"; 
+import UserModel from "../Models/User.Model.js"
 import mongoose from "mongoose";
 export const addToCart = async (req, res) => {
     try {
         const { productId, quantity } = req.body;
-        const userId = req.user?.id || new mongoose.Types.ObjectId(); 
+        const userId = req.userId
 
-        console.log("Request Body:", req.body); 
-        console.log("User ID:", userId); 
-
-        // Validate ObjectIds
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: "Invalid user ID" });
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized. Please log in." });
         }
 
         if (!mongoose.Types.ObjectId.isValid(productId)) {
             return res.status(400).json({ message: "Invalid product ID" });
         }
 
-        // Validate product
         const product = await ProductModel.findById(productId);
         if (!product) {
-            console.log("Product not found for ID:", productId); // Debug product check
             return res.status(404).json({ message: "Product not found" });
         }
 
-        // Check if the product already exists in the user's cart
-        const existingCartProduct = await CartproductModel.findOne({ userId, productId });
-        console.log("Existing Cart Product:", existingCartProduct); // Debug existing cart product
+        const existingCartItem = await CartproductModel.findOne({ userId, productId });
 
-        if (existingCartProduct) {
-            existingCartProduct.quantity += quantity || 1;
-            await existingCartProduct.save();
-            return res.status(200).json({ message: "Product quantity updated in the cart", cart: existingCartProduct });
+        if (existingCartItem) {
+            existingCartItem.quantity += quantity || 1;
+            await existingCartItem.save();
+            return res.status(200).json({ message: "Product quantity updated", cartItem: existingCartItem });
         }
 
-        // Add the product to the cart
-        const newCartProduct = new CartproductModel({ productId, quantity: quantity || 1, userId });
-        await newCartProduct.save();
-        res.status(201).json({ message: "Product added to the cart", cart: newCartProduct });
+        const newCartItem = new CartproductModel({ productId, quantity: quantity || 1, userId });
+        await newCartItem.save();
+
+        res.status(201).json({ message: "Product added to cart", cartItem: newCartItem });
     } catch (error) {
-        console.error("Error in addToCart:", error); // Improved error logging
+        console.error("Error in addToCart:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
@@ -119,24 +111,27 @@ export const getCart = async (req, res) => {
 
 export const updateCart = async (req, res) => {
     try {
-        const { cartProductId, quantity } = req.body;
+        const { productId, quantity } = req.body;
+        const userId = req.userId
 
-        // Check if cartProductId is valid
-        if (!mongoose.Types.ObjectId.isValid(cartProductId)) {
-            return res.status(400).json({ message: "Invalid cartProductId format" });
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized. Please log in." });
         }
 
-        // Find the cart item by ID
-        const cartProduct = await CartproductModel.findById(cartProductId);
-        if (!cartProduct) {
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ message: "Invalid product ID" });
+        }
+
+        const cartItem = await CartproductModel.findOne({ userId, productId });
+
+        if (!cartItem) {
             return res.status(404).json({ message: "Cart item not found" });
         }
 
-        // Update the quantity
-        cartProduct.quantity = quantity;
-        await cartProduct.save();
+        cartItem.quantity = quantity;
+        await cartItem.save();
 
-        res.status(200).json({ message: "Cart item updated", cart: cartProduct });
+        res.status(200).json({ message: "Cart updated", cartItem });
     } catch (error) {
         console.error("Error in updateCart:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -144,21 +139,29 @@ export const updateCart = async (req, res) => {
 };
 
 
+
 // Remove a product from the cart
 export const removeFromCart = async (req, res) => {
     try {
-        const { cartProductId } = req.params;
+        const { productId } = req.params;
+        const userId = req.userId
 
-        const cartProduct = await CartproductModel.findByIdAndDelete(cartProductId);
-        if (!cartProduct) {
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized. Please log in." });
+        }
+
+        const cartItem = await CartproductModel.findOneAndDelete({ userId, productId });
+
+        if (!cartItem) {
             return res.status(404).json({ message: "Cart item not found" });
         }
 
-        res.status(200).json({ message: "Product removed from the cart" });
+        res.status(200).json({ message: "Product removed from cart" });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        console.error("Error in removeFromCart:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 
