@@ -9,36 +9,42 @@ const razorpay = new Razorpay({
 
 // ✅ Create Razorpay Order
 export const createRazorpayOrder = async (req, res) => {
-    try {
-      console.log("Received request body:", req.body);
-      const { amount, currency = "INR", receipt } = req.body;
-  
-      if (!amount || !receipt) {
-        return res.status(400).json({ success: false, message: "Missing amount or receipt" });
-      }
-  
-      const options = {
-        amount: amount * 100, // Convert amount to paise
-        currency,
-        receipt,
-        payment_capture: 1,
-      };
-  
-      console.log("Creating order with options:", options);
-  
-      const order = await razorpay.orders.create(options);
-      console.log("Order created successfully:", order);
-  
-      res.status(200).json({ success: true, order });
-    } catch (error) {
-      console.error("Razorpay Order Error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Payment order creation failed",
-        error: error.message,
-      });
+  try {
+    console.log("Received request headers:", req.headers); // ✅ Check headers
+    console.log("Extracted userId:", req.userId); // ✅ Check if userId exists
+
+    if (!req.userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized - User ID missing" });
     }
-  };
+    const { amount, currency = "INR", receipt } = req.body;
+
+    if (!amount || !receipt) {
+      return res.status(400).json({ success: false, message: "Missing amount or receipt" });
+    }
+
+    const options = {
+      amount: amount * 100, // Convert amount to paise
+      currency,
+      receipt,
+      payment_capture: 1,
+    };
+
+    console.log("Creating order with options:", options);
+
+    const order = await razorpay.orders.create(options);
+    console.log("Order created successfully:", order);
+
+    res.status(200).json({ success: true, order });
+  } catch (error) {
+    console.error("Razorpay Order Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Payment order creation failed",
+      error: error.message,
+    });
+  }
+};
+
   
 
 // ✅ Verify Payment & Save Order
