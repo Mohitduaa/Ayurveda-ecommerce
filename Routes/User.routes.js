@@ -7,6 +7,7 @@ import { createProduct, deleteProduct, getAllProducts, getProductById, updatePro
 import { addToCart,getCart, removeFromCart, updateCart } from "../Controllers/CartproductController.js";
 import { createOrder, getAllOrders, getOrderById, updateOrder } from "../Controllers/Order.controllers.js";
 import { createCategory, deleteCategory, getAllCategories, getCategoryById, updateCategory } from "../Controllers/Category.controllers.js";
+import { createRazorpayOrder, verifyPayment } from "../Controllers/paymentController.js";
 
 
 const UserRouter = Router()
@@ -43,4 +44,6 @@ UserRouter.get('/All-categories',Auth,getAllCategories)
 UserRouter.get('/Categories-by-id/:id',getCategoryById)
 UserRouter.put('/category-update/:id',updateCategory)
 UserRouter.delete('/delete-category-by-id/:id',deleteCategory)
+UserRouter.post("/create-order",Auth,createRazorpayOrder);
+UserRouter.post("/verify-payment",Auth,verifyPayment);
 export default UserRouter;
