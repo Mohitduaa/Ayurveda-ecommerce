@@ -52,10 +52,14 @@ export const createRazorpayOrder = async (req, res) => {
 
 export const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userId, cartItems, addressId } = req.body;
+    const userId = req.userId; // Ensure userId is taken from auth middleware
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, cartItems, addressId } = req.body;
 
     console.log("Received Data:", req.body); // 🛠️ Debugging
-    console.log("Razorpay Secret:", process.env.RAZORPAY_KEY_SECRET); // 🛠️ Debugging
+
+    if (!cartItems || cartItems.length === 0) {
+      return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
 
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -73,8 +77,13 @@ export const verifyPayment = async (req, res) => {
     const newOrder = new OrderModel({
       userId,
       orderId: razorpay_order_id,
-      productId: cartItems[0].productId,
-      product_details: { name: cartItems[0].name, image: cartItems[0].image },
+      products: cartItems.map(item => ({
+        productId: item.productId,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        quantity: item.quantity
+      })),
       paymentId: razorpay_payment_id,
       payment_status: "Paid",
       delivery_address: addressId,
