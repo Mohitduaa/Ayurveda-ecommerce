@@ -27,6 +27,8 @@ app.get('/',(request,response) =>{
     })
 })
 app.use('/api/user',UserRouter)
+app.use("/api/aa",sellerroutes);
+
 connectDB();
 
 app.listen(PORT,()=>{
