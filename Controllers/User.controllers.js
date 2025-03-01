@@ -9,56 +9,86 @@ import generateOtp from '../utils/generateOtp.js'
 import forgotPasswordTemplate from '../utils/forgotPasswordTemplate.js'
 import jwt from "jsonwebtoken"
 
- export async function registerUserController(req,res){
-    try{
-        const {name ,email , password} = req.body
+export async function registerUserController(req, res) {
+    try {
+        const { name, email, password } = req.body;
 
-        if(!name || !email || !password){
+        // 🔹 Check if all fields are provided
+        if (!name || !email || !password) {
             return res.status(400).json({
-                message:"provide email ,name and password",
-                error:true,
-                success:false
-            })
+                message: "Provide name, email, and password",
+                error: true,
+                success: false
+            });
         }
-        const user = await UserModel.findOne({email})
-        if(user){
-            return res.json({
-                message:"Already register email",
-                error:true,
-                success:false
-            })
+
+        // 🔹 Validate password length (minimum 6 characters)
+        if (password.length < 6) {
+            return res.status(400).json({
+                message: "Password must be at least 6 characters long",
+                error: true,
+                success: false
+            });
         }
-        const salt = await bcryptjs.genSalt(10)
-        const hashPassword = await bcryptjs.hash(password,salt)
-        const payload ={
+
+        // 🔹 Validate name (must contain at least one letter and one number)
+        const nameRegex = /^(?=.*[A-Za-z])(?=.*\d).+$/;
+        if (!nameRegex.test(name)) {
+            return res.status(400).json({
+                message: "Name must contain at least one letter and one number",
+                error: true,
+                success: false
+            });
+        }
+
+        // 🔹 Check if email is already registered
+        const user = await UserModel.findOne({ email });
+        if (user) {
+            return res.status(400).json({
+                message: "Email is already registered",
+                error: true,
+                success: false
+            });
+        }
+
+        // 🔹 Hash password before saving
+        const salt = await bcryptjs.genSalt(10);
+        const hashPassword = await bcryptjs.hash(password, salt);
+
+        // 🔹 Create new user
+        const newUser = new UserModel({
             name,
             email,
-            password:hashPassword
-        }
-        const newUser = new UserModel(payload)
-        const save = await newUser.save()
-        const verifyEmailUrl = `${process.env.Frontend_URI}/verify-email?code=${save._id}`
-        const verifyEmail = await sendEmail({
-            sendTo:email,
-            subject:"Verify email from Ayurveda",
-            html:verifyEmailTemplate({
-                name,
-                url : verifyEmailUrl
-            })
-        })
+            password: hashPassword
+        });
+
+        // 🔹 Save user to database
+        const save = await newUser.save();
+
+        // 🔹 Send email verification
+        const verifyEmailUrl = `${process.env.Frontend_URI}/verify-email?code=${save._id}`;
+        await sendEmail({
+            sendTo: email,
+            subject: "Verify Email from Ayurveda",
+            html: verifyEmailTemplate({ name, url: verifyEmailUrl })
+        });
+
         return res.json({
-            message:"User registered sucessfully",
-            error:false,
-            success : true,
-            data:save
-        })
-    }catch(error){
+            message: "User registered successfully",
+            error: false,
+            success: true,
+            data: save
+        });
+
+    } catch (error) {
+        console.error("Registration Error:", error);
         return res.status(500).json({
-            error:true,
-            sucess:false
-        })
+            message: "Internal Server Error",
+            error: true,
+            success: false
+        });
     }
- }
+}
 
  export async function verifyEmailController(req,res){
     try{
